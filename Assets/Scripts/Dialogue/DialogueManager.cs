@@ -6,7 +6,7 @@ using System;
 using TMPro;
 using UnityEngine.UI;
 
-public class DialogueManager : MonoBehaviour
+public class DialogueManager : MonoBehaviour, IAction
 {
 
     
@@ -18,17 +18,24 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] Button nextButton;
     [SerializeField] InstrumentInventory instrumentInventory;
     [SerializeField] GameObject viewportContent;
+    [SerializeField] Mover mover;
+    [SerializeField] float distanceToSpeaker = 4f;
+    [SerializeField] ActionScheduler actionScheduler;
+    [SerializeField] PlayerController player;
     private InstrumentSO instrumentToBeGiven = null;
     private bool hasInstrumentBeenAcquired = false;
     private const string gotInstrumentTag = "acquired_instr";
+    private string speaker = "";
+    private string speakerTag = "speaker: ";
+    private AIConversant aIConversant;
+    private bool inDialogue = false;
+    
     
 
 
     // Start is called before the first frame update
     void Start()
     {
-        //story = new Story(inkJSON.text);
-        //RefreshUI();
 
     }
 
@@ -37,12 +44,24 @@ public class DialogueManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (aIConversant == null) return;
+        Debug.Log(inDialogue);
+        if (inDialogue) return;
+        Debug.Log("FMT");
+        if (!GetIsInRange(aIConversant.transform))
+            {
+                mover.MoveTo(aIConversant.transform.position, 1f);
+            }
+            else
+            {
+                mover.Cancel();
+                StartDialogue();
+            }
     }
 
     public void RefreshUI()
     {
-        //ClearUI();
+        ClearUI();
 
         TextMeshProUGUI storyText = Instantiate(dialogueTextPrefab) as TextMeshProUGUI;
 
@@ -83,11 +102,25 @@ public class DialogueManager : MonoBehaviour
         string text = "";
         if (story.canContinue)
         {
-            text = story.Continue(); //makes tags not work?? need to use continue??
+            text = story.Continue();
+            text = "<b>" + GetSpeaker(story.currentTags) + "</b>" + text;
             HandleTags(story.currentTags);
         }
         
         return text;
+    }
+
+    private string GetSpeaker(List<string> currentTags)
+    {
+        foreach (string currentTag in currentTags)
+        {
+            if (currentTag.Contains(speakerTag))
+            {
+                return currentTag.Replace(speakerTag, "")  + ": ";
+            }
+        }
+
+        return "You: ";
     }
 
     private void HandleTags(List<string> currentTags)
@@ -99,7 +132,8 @@ public class DialogueManager : MonoBehaviour
                 hasInstrumentBeenAcquired = true;
             }
         }
-    }
+    } 
+
 
     void ChooseStoryChoice(Choice choice)
     {
@@ -109,25 +143,41 @@ public class DialogueManager : MonoBehaviour
 
     void ClearUI()
     {
-        for (int i=0; i < dialogueArea.transform.childCount; i++)
+        
+        for (int i=0; i < viewportContent.transform.childCount; i++)
         {
-            if (!dialogueArea.transform.GetChild(i).gameObject.CompareTag("PreserveUI"))
-            Destroy(dialogueArea.transform.GetChild(i).gameObject);
+
+            GameObject dialogueAreaElement = viewportContent.transform.GetChild(i).gameObject;
+            if (!dialogueAreaElement.CompareTag("PreserveUI") && dialogueAreaElement.GetComponent<Button>())
+            {
+                Destroy(dialogueAreaElement);
+            }
+                
         }
     }
 
-    public void StartDialogue(TextAsset inkJSON, InstrumentSO instrument)
+    public void CallToStartDialogue(TextAsset inkJSON, InstrumentSO instrument, AIConversant conversationWith)
     {
-        instrumentToBeGiven = instrument;
-        dialogueArea.SetActive(true);
+        actionScheduler.StartAction(this);
         story = new Story(inkJSON.text);
+        instrumentToBeGiven = instrument;
+        aIConversant = conversationWith;
+    }
+
+    public void StartDialogue()
+    {
+        
+        inDialogue = true;
+        
+        dialogueArea.SetActive(true);
+        
         RefreshUI();
     }
 
     public void StopDialogue()
     {
+        inDialogue = false;
         PushDialogueConcequences();
-        this.enabled = false;
         dialogueArea.SetActive(false);
         ResetDialogueManager();
     }
@@ -142,6 +192,32 @@ public class DialogueManager : MonoBehaviour
 
     private void ResetDialogueManager()
     {
+        story = null;
+        instrumentToBeGiven = null;
+        aIConversant = null;
         hasInstrumentBeenAcquired = false;
+        ClearAllConversation();
+    }
+
+    private void ClearAllConversation()
+    {
+        for (int i=0; i < viewportContent.transform.childCount; i++)
+        {
+
+            GameObject dialogueAreaElement = viewportContent.transform.GetChild(i).gameObject;
+            Destroy(dialogueAreaElement);
+                
+        }    
+    }
+
+    private bool GetIsInRange(Transform targetTransform)
+    {
+        return Vector3.Distance(player.transform.position, targetTransform.position) < distanceToSpeaker;
+    }
+
+    public void Cancel()
+    {
+        Debug.Log("cancel dialogue");
+        StopDialogue();
     }
 }

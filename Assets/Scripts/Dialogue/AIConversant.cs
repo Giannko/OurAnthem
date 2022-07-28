@@ -14,8 +14,9 @@ public class AIConversant : MonoBehaviour, IRaycastable
         
         if (Input.GetMouseButtonDown(0))
         {
+            //If not close to target, move close to target
             dialogueManager.gameObject.SetActive(true);
-            dialogueManager.StartDialogue(inkJSON, instrumentToBeGiven);
+            dialogueManager.CallToStartDialogue(inkJSON, instrumentToBeGiven, this);
         }
         return true;
     }

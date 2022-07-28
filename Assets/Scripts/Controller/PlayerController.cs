@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] float maxNavMeshProjectionDistance = 1f;
-    [SerializeField] float raycastRadius = 1f;
+    [SerializeField] float raycastRadius = 0.1f;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
 
     private bool InteractWithComponent()
     {
+        
         RaycastHit[] hits = RaycastAllSorted();
             foreach (RaycastHit hit in hits)
             {
@@ -48,6 +49,7 @@ public class PlayerController : MonoBehaviour
 
     private bool InteractWithMovement()
         {
+            
             Vector3 target;
             bool hasHit = RaycastNavMesh(out target);
             if (hasHit)

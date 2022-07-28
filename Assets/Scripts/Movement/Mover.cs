@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Mover : MonoBehaviour
+public class Mover : MonoBehaviour, IAction
 {
 
     NavMeshAgent navMeshAgent;
     [SerializeField] float maxSpeed = 6f;
-    [SerializeField] float maxNavPathLength = 40f;    
+    [SerializeField] float maxNavPathLength = 40f;   
+    [SerializeField] ActionScheduler actionScheduler;
+
     private void Awake() 
     {
             navMeshAgent = GetComponent<NavMeshAgent>();
@@ -28,7 +30,7 @@ public class Mover : MonoBehaviour
 
     public void StartMoveAction(Vector3 destination, float speedFraction)
         {
-            //GetComponent<ActionScheduler>().StartAction(this);
+            actionScheduler.StartAction(this);
             MoveTo(destination, speedFraction);
         }
 
@@ -80,5 +82,10 @@ public class Mover : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5);
         }
+    public void Cancel()
+    {
+        Debug.Log("Cancel movement");
+        navMeshAgent.isStopped = true;
+    }
 
 }
