@@ -8,8 +8,29 @@ using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
+    enum CursorType
+    {
+        None,
+        Movement,
+        Interact
+    }
+
+    [System.Serializable]
+    struct CursorMapping
+    {
+        public CursorType type;
+        public Texture2D texture;
+        public Vector2 hotspot;
+    }
+
+
+    [SerializeField] CursorMapping[] cursorMappings = null;
     [SerializeField] float maxNavMeshProjectionDistance = 1f;
     [SerializeField] float raycastRadius = 0.1f;
+    [SerializeField] DialogueManager dialogueManager;
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,8 +41,11 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         if (InteractWithUI()) return;
+        if (dialogueManager.IsInDialogue()) return;
         if (InteractWithComponent()) return;
         if (InteractWithMovement()) return;
+
+        SetCursor(CursorType.None);
     }
 
     private bool InteractWithUI()
@@ -40,6 +64,7 @@ public class PlayerController : MonoBehaviour
                 {
                     if (raycastable.HandleRaycast(this))
                     {
+                        SetCursor(CursorType.Interact);
                         return true;
                     }
                 }
@@ -55,11 +80,12 @@ public class PlayerController : MonoBehaviour
             if (hasHit)
             {
                 if (!GetComponent<Mover>().CanMoveTo(target)) return false;
-
+                
                 if (Input.GetMouseButton(0))
                 {
                     GetComponent<Mover>().StartMoveAction(target, 1f);
                 }
+                SetCursor(CursorType.Movement);
                 return true;
             }
             return false;
@@ -100,5 +126,21 @@ public class PlayerController : MonoBehaviour
             return Camera.main.ScreenPointToRay(Input.mousePosition);
         }
 
-        
+    private void SetCursor(CursorType cursorType)
+    {
+        CursorMapping mapping = GetCursorMapping(cursorType);
+        Cursor.SetCursor(mapping.texture, mapping.hotspot, CursorMode.Auto);
+    }
+
+    private CursorMapping GetCursorMapping(CursorType type)
+    {
+        foreach(CursorMapping mapping in cursorMappings)
+        {
+            if (mapping.type == type)
+            {
+                return mapping;
+            }
+        }
+        return cursorMappings[0];
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class Mover : MonoBehaviour, IAction
     [SerializeField] float maxSpeed = 6f;
     [SerializeField] float maxNavPathLength = 40f;   
     [SerializeField] ActionScheduler actionScheduler;
+    [SerializeField] ParticleSystem moveParticleEffect;
 
     private void Awake() 
     {
@@ -30,9 +32,16 @@ public class Mover : MonoBehaviour, IAction
 
     public void StartMoveAction(Vector3 destination, float speedFraction)
         {
+            SpawnParticles(destination);
             actionScheduler.StartAction(this);
             MoveTo(destination, speedFraction);
         }
+
+    private void SpawnParticles(Vector3 destination)
+    {
+        
+        Instantiate(moveParticleEffect, destination, Quaternion.identity);
+    }
 
     public void MoveTo(Vector3 destination, float speedFraction)
         {

@@ -12,11 +12,19 @@ You really do? #speaker: Giannakis
 
 Sure thing! #acquired_instr #speaker: Giannakis
 
+You have made it my good sir 
+
+Treat this instrument with respect
+
+Make the best Anthem possible
+
 **No
 
 Fuck off! #speaker: Giannakis
 
 - You had {correctAnswers}/1 #speaker: Giannakis
+
+
 
 {correctAnswers > 0:
     ~gotInstrument = true

@@ -220,4 +220,9 @@ public class DialogueManager : MonoBehaviour, IAction
         Debug.Log("cancel dialogue");
         StopDialogue();
     }
+
+    public bool IsInDialogue()
+    {
+        return  inDialogue;
+    }
 }
