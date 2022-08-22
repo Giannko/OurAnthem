@@ -13,6 +13,7 @@ public class DialogueManager : MonoBehaviour, IAction
     private Story story;
 
     [SerializeField] GameObject dialogueArea;
+    [SerializeField] ScrollRect scrollRect;
     [SerializeField] TextMeshProUGUI dialogueTextPrefab;
     [SerializeField] Button dialogueButtonPrefab;
     [SerializeField] Button nextButton;
@@ -22,6 +23,7 @@ public class DialogueManager : MonoBehaviour, IAction
     [SerializeField] float distanceToSpeaker = 4f;
     [SerializeField] ActionScheduler actionScheduler;
     [SerializeField] PlayerController player;
+
     private InstrumentSO instrumentToBeGiven = null;
     private bool hasInstrumentBeenAcquired = false;
     private const string gotInstrumentTag = "acquired_instr";
@@ -36,7 +38,7 @@ public class DialogueManager : MonoBehaviour, IAction
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     
@@ -45,9 +47,7 @@ public class DialogueManager : MonoBehaviour, IAction
     void Update()
     {
         if (aIConversant == null) return;
-        Debug.Log(inDialogue);
         if (inDialogue) return;
-        Debug.Log("FMT");
         if (!GetIsInRange(aIConversant.transform))
             {
                 mover.MoveTo(aIConversant.transform.position, 1f);
@@ -68,7 +68,7 @@ public class DialogueManager : MonoBehaviour, IAction
         storyText.text = LoadStoryChunk();
         //storyText.transform.SetParent(dialogueArea.transform, false);
         storyText.transform.SetParent(viewportContent.transform, false);
-
+        
 
         if (story.currentChoices.Count == 0 && story.canContinue)
         {
@@ -94,6 +94,8 @@ public class DialogueManager : MonoBehaviour, IAction
                 ChooseStoryChoice(choice);
             });
         }
+        Debug.Log("whaaaat");
+        StartCoroutine(ScrollToBottom());
     }
 
     string LoadStoryChunk() //returning an empty string or the next chunk of the story
@@ -225,4 +227,12 @@ public class DialogueManager : MonoBehaviour, IAction
     {
         return  inDialogue;
     }
+
+        IEnumerator ScrollToBottom()
+    {
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        scrollRect.verticalNormalizedPosition = 0f;
+    }
+
 }
